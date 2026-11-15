@@ -1,0 +1,17 @@
+{
+  "name": "space-booking-api",
+  "version": "0.1.0",
+  "description": "API REST de reservas de salas e espaços com controle de conflito de horários",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "node --watch --env-file=.env src/server.js",
+    "start": "node src/server.js"
+  },
+  "dependencies": {
+    "express": "^5.3.0",
+    "zod": "^4.6.7"
+  }
+}
