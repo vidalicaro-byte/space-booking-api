@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  ADMIN
+  MEMBER
+}
+
+enum BookingStatus {
+  CONFIRMED
+  CANCELED
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         Role      @default(MEMBER)
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt    DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  bookings     Booking[]
+
+  @@map("users")
+}
+
+model Room {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  description String?
+  capacity    Int
+  active      Boolean   @default(true)
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @updatedAt @map("updated_at") @db.Timestamptz(3)
+  bookings    Booking[]
+
+  @@map("rooms")
+}
+
+model Booking {
+  id        String        @id @default(uuid())
+  userId    String        @map("user_id")
+  roomId    String        @map("room_id")
+  startsAt  DateTime      @map("starts_at") @db.Timestamptz(3)
+  endsAt    DateTime      @map("ends_at") @db.Timestamptz(3)
+  status    BookingStatus @default(CONFIRMED)
+  createdAt DateTime      @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt DateTime      @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+
+  @@index([roomId, startsAt])
+  @@index([userId])
+  @@map("bookings")
+}
