@@ -1,0 +1,25 @@
+@host = http://localhost:3000/api/v1
+
+### Cadastro válido
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "name": "Ana Souza", "email": "Ana@Example.com", "password": "senha-forte-123" }
+
+### Mesmo e-mail de novo (esperado: 409)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "name": "Ana Souza", "email": "ana@example.com", "password": "senha-forte-123" }
+
+### Dados inválidos (esperado: 400)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "name": "A", "email": "nao-e-email", "password": "123" }
+
+### Tentativa de virar admin (esperado: 201 com role MEMBER)
+POST {{host}}/auth/register
+Content-Type: application/json
+
+{ "name": "Mallory", "email": "mallory@example.com", "password": "senha-forte-123", "role": "ADMIN" }
