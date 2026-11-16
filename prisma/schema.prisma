@@ -44,6 +44,8 @@ model Room {
   @@map("rooms")
 }
 
+// A não-sobreposição de horários por sala é garantida por uma exclusion constraint
+// (bookings_no_overlap), criada via SQL em prisma/migrations/*_booking_no_overlap.
 model Booking {
   id        String        @id @default(uuid())
   userId    String        @map("user_id")
