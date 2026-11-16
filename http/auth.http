@@ -23,3 +23,33 @@ POST {{host}}/auth/register
 Content-Type: application/json
 
 { "name": "Mallory", "email": "mallory@example.com", "password": "senha-forte-123", "role": "ADMIN" }
+
+### Login válido (esperado: 200 com accessToken)
+# @name login
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "senha-forte-123" }
+
+### Senha errada (esperado: 401 INVALID_CREDENTIALS)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "senha-errada-123" }
+
+### E-mail inexistente (esperado: 401, mesma mensagem acima)
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ninguem@example.com", "password": "senha-forte-123" }
+
+### Rota protegida com token (esperado: 200 com seus dados)
+GET {{host}}/auth/me
+Authorization: Bearer {{login.response.body.data.accessToken}}
+
+### Rota protegida sem token (esperado: 401 UNAUTHORIZED)
+GET {{host}}/auth/me
+
+### Rota protegida com token falso (esperado: 401 INVALID_TOKEN)
+GET {{host}}/auth/me
+Authorization: Bearer isto.nao.eh-um-token
