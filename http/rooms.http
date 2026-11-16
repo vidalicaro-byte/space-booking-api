@@ -1,0 +1,93 @@
+@host = http://localhost:3000/api/v1
+
+### Login admin
+# @name adminLogin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@example.com", "password": "admin-senha-123" }
+
+### Login membro
+# @name memberLogin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "senha-forte-123" }
+
+### 1. Membro tenta criar sala (esperado: 403 FORBIDDEN)
+POST {{host}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+{ "name": "Sala Alfa", "capacity": 10 }
+
+### 2. Admin cria sala (esperado: 201)
+# @name createRoom
+POST {{host}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+{ "name": "Sala Delta", "description": "Sala com projetor", "capacity": 20 }
+
+### 3. Nome repetido (esperado: 409 ROOM_NAME_IN_USE)
+POST {{host}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+{ "name": "Sala Alfa", "capacity": 8 }
+
+### 4. Dados inválidos (esperado: 400 com lista de campos)
+POST {{host}}/rooms
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+{ "name": "X", "capacity": -5 }
+
+### 5. Membro lista salas (esperado: 200 com data e meta)
+GET {{host}}/rooms?page=1&limit=5
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+### 6. Filtros combinados (esperado: 200, só salas que batem)
+GET {{host}}/rooms?search=alfa&minCapacity=5
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+### 7. Buscar por id (esperado: 200)
+GET {{host}}/rooms/{{createRoom.response.body.data.id}}
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+### 8. Admin atualiza (esperado: 200 com capacity 12)
+PATCH {{host}}/rooms/{{createRoom.response.body.data.id}}
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+{ "capacity": 12 }
+
+### 9. PATCH vazio (esperado: 400)
+PATCH {{host}}/rooms/{{createRoom.response.body.data.id}}
+Content-Type: application/json
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+{}
+
+### 10. Id que não é UUID (esperado: 400)
+GET {{host}}/rooms/abc
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+### 11. UUID que não existe (esperado: 404 ROOM_NOT_FOUND)
+GET {{host}}/rooms/00000000-0000-4000-8000-000000000000
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+### 12. Admin desativa (esperado: 204)
+DELETE {{host}}/rooms/{{createRoom.response.body.data.id}}
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+### 13. Membro busca a sala desativada (esperado: 404)
+GET {{host}}/rooms/{{createRoom.response.body.data.id}}
+Authorization: Bearer {{memberLogin.response.body.data.accessToken}}
+
+### 14. Admin busca a mesma sala (esperado: 200 com "active": false)
+GET {{host}}/rooms/{{createRoom.response.body.data.id}}
+Authorization: Bearer {{adminLogin.response.body.data.accessToken}}
+
+### 15. Sem token (esperado: 401)
+GET {{host}}/rooms

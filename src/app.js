@@ -1,6 +1,7 @@
 import express from 'express';
 import { authRouter } from './modules/auth/auth.routes.js';
 import { errorHandler, notFoundHandler } from './middlewares/error-handler.js';
+import { roomsRouter } from './modules/rooms/rooms.routes.js';
 
 export const app = express();
 
@@ -11,6 +12,8 @@ app.get('/health', (_req, res) => {
 });
 
 app.use('/api/v1/auth', authRouter);
+
+app.use('/api/v1/rooms', roomsRouter);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
