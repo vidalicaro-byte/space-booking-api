@@ -1,3 +1,4 @@
+import { docsRouter } from './docs/docs.routes.js';
 import cors from 'cors';
 import express from 'express';
 import helmet from 'helmet';
@@ -14,6 +15,10 @@ export const app = express();
 app.set('trust proxy', env.TRUST_PROXY);
 
 app.use(httpLogger);
+
+app.use('/docs', docsRouter);
+app.get('/', (_req, res) => res.redirect('/docs'));
+
 app.use(helmet());
 app.use(cors({ origin: env.CORS_ORIGINS }));
 app.use(express.json({ limit: '10kb' }));
