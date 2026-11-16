@@ -13,3 +13,20 @@ export const createBookingSchema = z
     message: 'endsAt deve ser posterior a startsAt',
     path: ['endsAt'],
   });
+
+export const bookingIdParamSchema = z.object({ id: z.uuid() });
+
+export const listBookingsQuerySchema = z
+  .object({
+    page: z.coerce.number().int().min(1).default(1),
+    limit: z.coerce.number().int().min(1).max(100).default(10),
+    status: z.enum(['CONFIRMED', 'CANCELED']).optional(),
+    roomId: z.uuid().optional(),
+    userId: z.uuid().optional(), // só tem efeito para admin
+    from: isoDate.optional(),
+    to: isoDate.optional(),
+  })
+  .refine((data) => !data.from || !data.to || data.to > data.from, {
+    message: 'to deve ser posterior a from',
+    path: ['to'],
+  });

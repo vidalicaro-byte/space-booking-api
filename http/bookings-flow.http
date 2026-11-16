@@ -1,0 +1,105 @@
+@host = http://localhost:3000/api/v1
+
+### Logins
+# @name ana
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "senha-forte-123" }
+
+###
+# @name mallory
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "mallory@example.com", "password": "senha-forte-123" }
+
+###
+# @name admin
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "admin@example.com", "password": "admin-senha-123" }
+
+###
+# @name rooms
+GET {{host}}/rooms
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### Preparação A: Ana reserva a Sala Alfa para daqui a meses
+# @name far
+POST {{host}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+{ "roomId": "{{rooms.response.body.$.data[0].id}}", "startsAt": "2027-04-01T13:00:00-03:00", "endsAt": "2027-04-01T14:00:00-03:00" }
+
+### Preparação B: Ana reserva a Sala Gama para daqui a 1 hora
+# @name soon
+POST {{host}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+{ "roomId": "{{rooms.response.body.$.data[2].id}}", "startsAt": "{{$datetime iso8601 1 h}}", "endsAt": "{{$datetime iso8601 2 h}}" }
+
+### 1. Ana lista as próprias reservas (esperado: 200, só as dela, com meta)
+GET {{host}}/bookings
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 2. Mallory lista (esperado: 200, lista vazia, total 0)
+GET {{host}}/bookings
+Authorization: Bearer {{mallory.response.body.data.accessToken}}
+
+### 3. Admin lista todas (esperado: 200, com campo "user" em cada item)
+GET {{host}}/bookings
+Authorization: Bearer {{admin.response.body.data.accessToken}}
+
+### 4. Filtros: status e período (esperado: 200, só as reservas de março/2027)
+GET {{host}}/bookings?status=CONFIRMED&from=2027-03-01T00:00:00Z&to=2027-03-31T23:59:59Z
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 5. Filtro inválido (esperado: 400)
+GET {{host}}/bookings?status=QUALQUER
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 6. Ana busca a própria reserva (esperado: 200)
+GET {{host}}/bookings/{{far.response.body.data.id}}
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 7. Mallory busca a reserva da Ana (esperado: 404 BOOKING_NOT_FOUND)
+GET {{host}}/bookings/{{far.response.body.data.id}}
+Authorization: Bearer {{mallory.response.body.data.accessToken}}
+
+### 8. Mallory tenta cancelar a da Ana (esperado: 404)
+POST {{host}}/bookings/{{far.response.body.data.id}}/cancel
+Authorization: Bearer {{mallory.response.body.data.accessToken}}
+
+### 9. Ana cancela a reserva que começa em 1 h (esperado: 422 CANCELLATION_TOO_LATE)
+POST {{host}}/bookings/{{soon.response.body.data.id}}/cancel
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 10. Admin cancela a mesma (esperado: 200 com status CANCELED)
+POST {{host}}/bookings/{{soon.response.body.data.id}}/cancel
+Authorization: Bearer {{admin.response.body.data.accessToken}}
+
+### 11. Ana cancela a reserva distante (esperado: 200 com status CANCELED)
+POST {{host}}/bookings/{{far.response.body.data.id}}/cancel
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 12. Cancelar de novo (esperado: 409 BOOKING_ALREADY_CANCELED)
+POST {{host}}/bookings/{{far.response.body.data.id}}/cancel
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 13. Mallory reserva o horário que a Ana liberou (esperado: 201)
+POST {{host}}/bookings
+Content-Type: application/json
+Authorization: Bearer {{mallory.response.body.data.accessToken}}
+
+{ "roomId": "{{rooms.response.body.$.data[0].id}}", "startsAt": "2027-04-01T13:00:00-03:00", "endsAt": "2027-04-01T14:00:00-03:00" }
+
+### 14. Id que não é UUID (esperado: 400)
+GET {{host}}/bookings/abc
+Authorization: Bearer {{ana.response.body.data.accessToken}}
+
+### 15. Sem token (esperado: 401)
+GET {{host}}/bookings
