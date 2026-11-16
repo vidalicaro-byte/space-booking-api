@@ -53,3 +53,48 @@ GET {{host}}/auth/me
 ### Rota protegida com token falso (esperado: 401 INVALID_TOKEN)
 GET {{host}}/auth/me
 Authorization: Bearer isto.nao.eh-um-token
+
+### 1. Login (guarda os tokens)
+# @name login1
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "senha-forte-123" }
+
+### 2. Refresh com o token do login (esperado: 200, par de tokens NOVO)
+# @name refresh1
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{login1.response.body.data.refreshToken}}" }
+
+### 3. Reusar o token antigo (esperado: 401 REFRESH_TOKEN_REUSED)
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{login1.response.body.data.refreshToken}}" }
+
+### 4. O token NOVO também morreu, a família foi revogada (esperado: 401)
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{refresh1.response.body.data.refreshToken}}" }
+
+### 5. Novo login para testar o logout
+# @name login2
+POST {{host}}/auth/login
+Content-Type: application/json
+
+{ "email": "ana@example.com", "password": "senha-forte-123" }
+
+### 6. Logout (esperado: 204 sem corpo)
+POST {{host}}/auth/logout
+Content-Type: application/json
+
+{ "refreshToken": "{{login2.response.body.data.refreshToken}}" }
+
+### 7. Refresh depois do logout (esperado: 401)
+POST {{host}}/auth/refresh
+Content-Type: application/json
+
+{ "refreshToken": "{{login2.response.body.data.refreshToken}}" }

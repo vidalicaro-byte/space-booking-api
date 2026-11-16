@@ -1,4 +1,10 @@
-import { getCurrentUser, loginUser, registerUser } from './auth.service.js';
+import {
+  getCurrentUser,
+  loginUser,
+  logoutUser,
+  refreshSession,
+  registerUser,
+} from './auth.service.js';
 
 export async function register(req, res) {
   const user = await registerUser(req.body);
@@ -13,4 +19,14 @@ export async function login(req, res) {
 export async function me(req, res) {
   const user = await getCurrentUser(req.user.id);
   res.json({ data: user });
+}
+
+export async function refresh(req, res) {
+  const tokens = await refreshSession(req.body.refreshToken);
+  res.json({ data: tokens });
+}
+
+export async function logout(req, res) {
+  await logoutUser(req.body.refreshToken);
+  res.status(204).send();
 }
