@@ -16,5 +16,7 @@ export const httpLogger = pinoHttp({
     if (res.statusCode >= 400) return 'warn';
     return 'info';
   },
-  autoLogging: { ignore: (req) => req.url === '/health' || req.url.startsWith('/docs') },
+  autoLogging: {
+    ignore: (req) => req.url.startsWith('/health') || req.url.startsWith('/docs'),
+  },
 });

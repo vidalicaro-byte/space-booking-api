@@ -13,7 +13,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky",
+    "prepare": "husky || true",
     "seed": "node --env-file=.env scripts/seed.js",
     "test": "vitest run",
     "test:watch": "vitest"

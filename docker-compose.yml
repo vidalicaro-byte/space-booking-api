@@ -17,5 +17,23 @@ services:
       timeout: 5s
       retries: 5
 
+  api:
+    build: .
+    profiles: ['app']
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      # Dentro da rede do Compose o banco é "db:5432", não "localhost:5433"
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/space_booking
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET:?defina JWT_ACCESS_SECRET no .env}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:5173}
+      LOG_LEVEL: info
+    ports:
+      - '3000:3000'
+
 volumes:
   pgdata:
