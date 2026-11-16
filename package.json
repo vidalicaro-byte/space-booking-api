@@ -29,10 +29,15 @@
     "@prisma/adapter-pg": "^7.10.1",
     "@prisma/client": "^7.10.1",
     "argon2": "^0.45.2",
+    "cors": "^2.8.6",
     "dotenv": "^18.0.10",
     "express": "^5.3.0",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
     "jose": "^6.2.17",
     "pg": "^8.23.1",
+    "pino": "^10.4.0",
+    "pino-http": "^11.0.0",
     "zod": "^4.6.7"
   },
   "devDependencies": {
@@ -42,6 +47,7 @@
     "globals": "^17.14.0",
     "husky": "^9.1.7",
     "lint-staged": "^17.6.1",
+    "pino-pretty": "^13.2.0",
     "prettier": "^3.10.1",
     "prisma": "^7.10.1",
     "supertest": "^7.3.2",

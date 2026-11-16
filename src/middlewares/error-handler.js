@@ -5,7 +5,7 @@ export function notFoundHandler(_req, res) {
 }
 
 // O Express só reconhece um error handler se ele tiver exatamente 4 parâmetros
-export function errorHandler(err, _req, res, _next) {
+export function errorHandler(err, req, res, _next) {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       error: { code: err.code, message: err.message, details: err.details },
@@ -16,6 +16,13 @@ export function errorHandler(err, _req, res, _next) {
     return res.status(400).json({ error: { code: 'INVALID_JSON', message: 'JSON malformado' } });
   }
 
-  console.error(err);
+  if (err.type === 'entity.too.large') {
+    return res
+      .status(413)
+      .json({ error: { code: 'PAYLOAD_TOO_LARGE', message: 'Corpo da requisição grande demais' } });
+  }
+
+  // req.log já carrega o ID da requisição, então o erro fica ligado ao request que o causou
+  req.log.error({ err }, 'Erro não tratado');
   res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Erro interno do servidor' } });
 }
