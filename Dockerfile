@@ -1,4 +1,4 @@
-FROM node:24-slim AS base
+FROM node:26-slim AS base
 WORKDIR /app
 # O Prisma precisa do OpenSSL (a imagem slim não traz)
 RUN apt-get update -y \
