@@ -1,9 +1,8 @@
 import { execSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
-import { parseEnv } from 'node:util';
+import { loadTestEnv } from './load-test-env.js';
 
 export default function setup() {
-  const env = parseEnv(readFileSync('.env.test', 'utf8'));
+  const env = loadTestEnv();
   const dbName = new URL(env.DATABASE_URL).pathname.slice(1);
 
   if (!dbName.endsWith('_test')) {
